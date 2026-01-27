@@ -1,0 +1,9 @@
+[logging]
+level = "info"
+format = "json"
+
+[database]
+pool_size = 20
+
+[redis]
+pool_size = 20

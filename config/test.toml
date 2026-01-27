@@ -1,0 +1,10 @@
+[logging]
+level = "warn"
+format = "pretty"
+
+[database]
+pool_size = 5
+
+[rate_limit]
+requests_per_second = 1000
+burst_size = 1000

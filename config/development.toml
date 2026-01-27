@@ -1,0 +1,7 @@
+[logging]
+level = "debug"
+format = "pretty"
+
+[rate_limit]
+requests_per_second = 100
+burst_size = 200
