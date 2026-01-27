@@ -1,5 +1,4 @@
 use axum::extract::{Path, Query, State};
-use uuid::Uuid;
 
 use super::{CreateUserRequest, UpdateUserRequest, UserResponse, UserService};
 use crate::AppState;
@@ -19,9 +18,9 @@ pub async fn list_users(
 
 pub async fn get_user(
     State(state): State<AppState>,
-    Path(id): Path<Uuid>,
+    Path(id): Path<String>,
 ) -> Result<ApiResponse<UserResponse>, ApiError> {
-    let user = UserService::find_by_id(&state.db_pool, id)?;
+    let user = UserService::find_by_id(&state.db_pool, &id)?;
     Ok(ApiResponse::success(user.into()))
 }
 
@@ -29,7 +28,7 @@ pub async fn get_current_user(
     State(state): State<AppState>,
     current_user: CurrentUser,
 ) -> Result<ApiResponse<UserResponse>, ApiError> {
-    let user = UserService::find_by_id(&state.db_pool, current_user.id)?;
+    let user = UserService::find_by_id(&state.db_pool, &current_user.id)?;
     Ok(ApiResponse::success(user.into()))
 }
 
@@ -43,10 +42,10 @@ pub async fn create_user(
 
 pub async fn update_user(
     State(state): State<AppState>,
-    Path(id): Path<Uuid>,
+    Path(id): Path<String>,
     ValidatedJson(request): ValidatedJson<UpdateUserRequest>,
 ) -> Result<ApiResponse<UserResponse>, ApiError> {
-    let user = UserService::update(&state.db_pool, id, request)?;
+    let user = UserService::update(&state.db_pool, &id, request)?;
     Ok(ApiResponse::success(user.into()))
 }
 
@@ -55,14 +54,14 @@ pub async fn update_current_user(
     current_user: CurrentUser,
     ValidatedJson(request): ValidatedJson<UpdateUserRequest>,
 ) -> Result<ApiResponse<UserResponse>, ApiError> {
-    let user = UserService::update(&state.db_pool, current_user.id, request)?;
+    let user = UserService::update(&state.db_pool, &current_user.id, request)?;
     Ok(ApiResponse::success(user.into()))
 }
 
 pub async fn delete_user(
     State(state): State<AppState>,
-    Path(id): Path<Uuid>,
+    Path(id): Path<String>,
 ) -> Result<NoContent, ApiError> {
-    UserService::delete(&state.db_pool, id)?;
+    UserService::delete(&state.db_pool, &id)?;
     Ok(NoContent)
 }

@@ -3,7 +3,7 @@ use chrono::Utc;
 use jsonwebtoken::{EncodingKey, Header, encode};
 use redis::AsyncCommands;
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
+use ulid::Ulid;
 
 use super::{AuthResponse, LoginRequest, RegisterRequest, TokenResponse, UserInfo};
 use crate::config::{DbPool, JwtSettings};
@@ -40,7 +40,7 @@ impl AuthService {
 
         Ok(AuthResponse {
             user: UserInfo {
-                id: user.id.to_string(),
+                id: user.id,
                 email: user.email,
                 name: user.name,
             },
@@ -67,7 +67,7 @@ impl AuthService {
 
         Ok(AuthResponse {
             user: UserInfo {
-                id: user.id.to_string(),
+                id: user.id,
                 email: user.email,
                 name: user.name,
             },
@@ -88,9 +88,7 @@ impl AuthService {
         let user_id: Option<String> = conn.get(&token_key).await?;
         let user_id = user_id.ok_or(ApiError::Unauthorized)?;
 
-        let user_uuid = Uuid::parse_str(&user_id).map_err(|_| ApiError::Unauthorized)?;
-
-        let user = UserService::find_by_id(db_pool, user_uuid)?;
+        let user = UserService::find_by_id(db_pool, &user_id)?;
 
         // Delete old refresh token
         conn.del::<_, ()>(&token_key).await?;
@@ -116,7 +114,7 @@ impl AuthService {
 
         // Generate access token
         let access_claims = Claims {
-            sub: user.id.to_string(),
+            sub: user.id.clone(),
             email: user.email.clone(),
             exp: (now + access_token_duration).timestamp(),
             iat: now.timestamp(),
@@ -129,14 +127,14 @@ impl AuthService {
         )?;
 
         // Generate refresh token
-        let refresh_token = Uuid::new_v4().to_string();
+        let refresh_token = Ulid::new().to_string();
 
         // Store refresh token in Redis
         let token_key = format!("refresh_token:{}", refresh_token);
         let mut conn = redis_pool.get().await?;
         conn.set_ex::<_, _, ()>(
             &token_key,
-            user.id.to_string(),
+            user.id.clone(),
             refresh_token_duration.num_seconds() as u64,
         )
         .await?;

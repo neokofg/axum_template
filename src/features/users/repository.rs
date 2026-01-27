@@ -1,5 +1,4 @@
 use diesel::prelude::*;
-use uuid::Uuid;
 
 use super::{NewUser, UpdateUser, User};
 use crate::config::DbConnection;
@@ -9,7 +8,7 @@ use crate::schema::users;
 pub struct UserRepository;
 
 impl UserRepository {
-    pub fn find_by_id(conn: &mut DbConnection, id: Uuid) -> Result<User, ApiError> {
+    pub fn find_by_id(conn: &mut DbConnection, id: &str) -> Result<User, ApiError> {
         users::table
             .filter(users::id.eq(id))
             .first(conn)
@@ -54,7 +53,7 @@ impl UserRepository {
 
     pub fn update(
         conn: &mut DbConnection,
-        id: Uuid,
+        id: &str,
         update_user: UpdateUser,
     ) -> Result<User, ApiError> {
         diesel::update(users::table.filter(users::id.eq(id)))
@@ -64,7 +63,7 @@ impl UserRepository {
             .map_err(ApiError::from)
     }
 
-    pub fn delete(conn: &mut DbConnection, id: Uuid) -> Result<usize, ApiError> {
+    pub fn delete(conn: &mut DbConnection, id: &str) -> Result<usize, ApiError> {
         diesel::delete(users::table.filter(users::id.eq(id)))
             .execute(conn)
             .map_err(ApiError::from)

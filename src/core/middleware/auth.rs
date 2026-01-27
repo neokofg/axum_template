@@ -6,7 +6,6 @@ use axum::{
     response::Response,
 };
 use jsonwebtoken::{DecodingKey, Validation, decode};
-use uuid::Uuid;
 
 use crate::AppState;
 use crate::core::ApiError;
@@ -28,11 +27,8 @@ pub async fn auth_middleware(
     .map_err(|e| ApiError::JwtError(e.to_string()))?
     .claims;
 
-    let user_id = Uuid::parse_str(&claims.sub)
-        .map_err(|_| ApiError::JwtError("Invalid user ID in token".to_string()))?;
-
     let current_user = CurrentUser {
-        id: user_id,
+        id: claims.sub,
         email: claims.email,
     };
 

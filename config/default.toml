@@ -21,3 +21,12 @@ burst_size = 30
 [logging]
 level = "info"
 format = "pretty"
+
+[smtp]
+host = "localhost"
+port = 1025
+username = ""
+password = ""
+from_email = "noreply@example.com"
+from_name = "Axum Template"
+tls = false

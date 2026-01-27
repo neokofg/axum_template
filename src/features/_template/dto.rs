@@ -1,5 +1,4 @@
 // use serde::{Deserialize, Serialize};
-// use uuid::Uuid;
 // use validator::Validate;
 //
 // use super::YourModel;
@@ -18,7 +17,7 @@
 //
 // #[derive(Debug, Serialize)]
 // pub struct Response {
-//     pub id: Uuid,
+//     pub id: String,
 //     pub name: String,
 // }
 //

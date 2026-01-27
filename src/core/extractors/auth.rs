@@ -1,11 +1,10 @@
 use axum::{extract::FromRequestParts, http::request::Parts};
-use uuid::Uuid;
 
 use crate::core::ApiError;
 
 #[derive(Debug, Clone)]
 pub struct CurrentUser {
-    pub id: Uuid,
+    pub id: String,
     pub email: String,
 }
 

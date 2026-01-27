@@ -4,7 +4,7 @@ use argon2::{
 };
 use chrono::Utc;
 use password_hash::rand_core::OsRng;
-use uuid::Uuid;
+use ulid::Ulid;
 
 use super::{CreateUserRequest, NewUser, UpdateUser, UpdateUserRequest, User, UserRepository};
 use crate::config::DbPool;
@@ -13,7 +13,7 @@ use crate::core::{ApiError, Paginated, PaginationParams};
 pub struct UserService;
 
 impl UserService {
-    pub fn find_by_id(pool: &DbPool, id: Uuid) -> Result<User, ApiError> {
+    pub fn find_by_id(pool: &DbPool, id: &str) -> Result<User, ApiError> {
         let mut conn = pool.get()?;
         UserRepository::find_by_id(&mut conn, id)
     }
@@ -43,7 +43,7 @@ impl UserService {
         let password_hash = hash_password(&request.password)?;
 
         let new_user = NewUser {
-            id: Uuid::new_v4(),
+            id: Ulid::new().to_string(),
             email: request.email,
             password_hash,
             name: request.name,
@@ -52,16 +52,16 @@ impl UserService {
         UserRepository::create(&mut conn, new_user)
     }
 
-    pub fn update(pool: &DbPool, id: Uuid, request: UpdateUserRequest) -> Result<User, ApiError> {
+    pub fn update(pool: &DbPool, id: &str, request: UpdateUserRequest) -> Result<User, ApiError> {
         let mut conn = pool.get()?;
 
         // Check if user exists
-        UserRepository::find_by_id(&mut conn, id)?;
+        let existing_user = UserRepository::find_by_id(&mut conn, id)?;
 
         // Check if new email is already taken by another user
         if let Some(ref email) = request.email
-            && let Some(existing) = UserRepository::find_by_email(&mut conn, email)?
-            && existing.id != id
+            && let Some(other_user) = UserRepository::find_by_email(&mut conn, email)?
+            && other_user.id != existing_user.id
         {
             return Err(ApiError::Conflict("Email already registered".to_string()));
         }
@@ -76,7 +76,7 @@ impl UserService {
         UserRepository::update(&mut conn, id, update)
     }
 
-    pub fn delete(pool: &DbPool, id: Uuid) -> Result<(), ApiError> {
+    pub fn delete(pool: &DbPool, id: &str) -> Result<(), ApiError> {
         let mut conn = pool.get()?;
 
         // Check if user exists

@@ -1,7 +1,6 @@
 use chrono::{DateTime, Utc};
 use diesel::prelude::*;
 use serde::Serialize;
-use uuid::Uuid;
 
 use crate::schema::users;
 
@@ -9,7 +8,7 @@ use crate::schema::users;
 #[diesel(table_name = users)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct User {
-    pub id: Uuid,
+    pub id: String,
     pub email: String,
     #[serde(skip_serializing)]
     pub password_hash: String,
@@ -22,7 +21,7 @@ pub struct User {
 #[derive(Debug, Insertable)]
 #[diesel(table_name = users)]
 pub struct NewUser {
-    pub id: Uuid,
+    pub id: String,
     pub email: String,
     pub password_hash: String,
     pub name: String,

@@ -1,6 +1,7 @@
 use redis::AsyncCommands;
 use serde::Serialize;
 use tracing::info;
+use ulid::Ulid;
 
 use crate::infrastructure::cache::RedisPool;
 
@@ -28,7 +29,7 @@ impl QueueClient {
         job_type: &str,
         args: T,
     ) -> Result<String, redis::RedisError> {
-        let job_id = uuid::Uuid::new_v4().to_string();
+        let job_id = Ulid::new().to_string();
         let job = serde_json::json!({
             "id": job_id,
             "type": job_type,
@@ -52,7 +53,7 @@ impl QueueClient {
         args: T,
         delay_seconds: i64,
     ) -> Result<String, redis::RedisError> {
-        let job_id = uuid::Uuid::new_v4().to_string();
+        let job_id = Ulid::new().to_string();
         let execute_at = chrono::Utc::now() + chrono::Duration::seconds(delay_seconds);
         let job = serde_json::json!({
             "id": job_id,

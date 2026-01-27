@@ -1,6 +1,7 @@
 use std::net::SocketAddr;
 
 use axum::{Router, middleware};
+use diesel_migrations::{EmbeddedMigrations, MigrationHarness, embed_migrations};
 use tower_http::{
     compression::CompressionLayer,
     cors::{Any, CorsLayer},
@@ -17,6 +18,8 @@ use axum_template::{
     features,
     infrastructure::cache::create_redis_pool,
 };
+
+pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!();
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -38,6 +41,16 @@ async fn main() -> anyhow::Result<()> {
     // Create database pool
     let db_pool = create_pool(&settings.database);
     info!("Database pool created");
+
+    // Run migrations
+    {
+        let mut conn = db_pool
+            .get()
+            .expect("Failed to get connection for migrations");
+        conn.run_pending_migrations(MIGRATIONS)
+            .expect("Failed to run database migrations");
+        info!("Database migrations completed");
+    }
 
     // Create Redis pool
     let redis_pool = create_redis_pool(&settings.redis).await?;

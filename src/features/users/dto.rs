@@ -1,6 +1,5 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 use validator::Validate;
 
 use super::User;
@@ -36,7 +35,7 @@ pub struct UpdateUserRequest {
 
 #[derive(Debug, Serialize)]
 pub struct UserResponse {
-    pub id: Uuid,
+    pub id: String,
     pub email: String,
     pub name: String,
     pub is_active: bool,

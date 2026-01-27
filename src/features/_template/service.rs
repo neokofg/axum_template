@@ -1,4 +1,4 @@
-// use uuid::Uuid;
+// use ulid::Ulid;
 //
 // use super::{CreateRequest, YourModel, YourRepository};
 // use crate::config::DbPool;
@@ -7,7 +7,7 @@
 // pub struct YourService;
 //
 // impl YourService {
-//     pub fn find_by_id(pool: &DbPool, id: Uuid) -> Result<YourModel, ApiError> {
+//     pub fn find_by_id(pool: &DbPool, id: &str) -> Result<YourModel, ApiError> {
 //         let mut conn = pool.get()?;
 //         YourRepository::find_by_id(&mut conn, id)
 //     }
@@ -22,11 +22,11 @@
 //
 //     pub fn create(pool: &DbPool, request: CreateRequest) -> Result<YourModel, ApiError> {
 //         let mut conn = pool.get()?;
-//         // ... implement creation logic
+//         // ... implement creation logic with Ulid::new().to_string() for id
 //         todo!()
 //     }
 //
-//     pub fn delete(pool: &DbPool, id: Uuid) -> Result<(), ApiError> {
+//     pub fn delete(pool: &DbPool, id: &str) -> Result<(), ApiError> {
 //         let mut conn = pool.get()?;
 //         YourRepository::find_by_id(&mut conn, id)?;
 //         YourRepository::delete(&mut conn, id)?;

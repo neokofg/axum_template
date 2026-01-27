@@ -1,5 +1,4 @@
 // use diesel::prelude::*;
-// use uuid::Uuid;
 //
 // use super::{NewYourModel, UpdateYourModel, YourModel};
 // use crate::config::DbConnection;
@@ -9,7 +8,7 @@
 // pub struct YourRepository;
 //
 // impl YourRepository {
-//     pub fn find_by_id(conn: &mut DbConnection, id: Uuid) -> Result<YourModel, ApiError> {
+//     pub fn find_by_id(conn: &mut DbConnection, id: &str) -> Result<YourModel, ApiError> {
 //         your_table::table
 //             .filter(your_table::id.eq(id))
 //             .first(conn)
@@ -46,7 +45,7 @@
 //
 //     pub fn update(
 //         conn: &mut DbConnection,
-//         id: Uuid,
+//         id: &str,
 //         update_model: UpdateYourModel,
 //     ) -> Result<YourModel, ApiError> {
 //         diesel::update(your_table::table.filter(your_table::id.eq(id)))
@@ -56,7 +55,7 @@
 //             .map_err(ApiError::from)
 //     }
 //
-//     pub fn delete(conn: &mut DbConnection, id: Uuid) -> Result<usize, ApiError> {
+//     pub fn delete(conn: &mut DbConnection, id: &str) -> Result<usize, ApiError> {
 //         diesel::delete(your_table::table.filter(your_table::id.eq(id)))
 //             .execute(conn)
 //             .map_err(ApiError::from)

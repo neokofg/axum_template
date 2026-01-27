@@ -2,7 +2,7 @@
 
 diesel::table! {
     users (id) {
-        id -> Uuid,
+        id -> Char,
         email -> Varchar,
         password_hash -> Varchar,
         name -> Varchar,

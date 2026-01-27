@@ -1,7 +1,6 @@
 // use axum::{
 //     extract::{Path, Query, State},
 // };
-// use uuid::Uuid;
 //
 // use super::{CreateRequest, Response, YourService};
 // use crate::core::extractors::ValidatedJson;
@@ -21,9 +20,9 @@
 //
 // pub async fn get(
 //     State(state): State<AppState>,
-//     Path(id): Path<Uuid>,
+//     Path(id): Path<String>,
 // ) -> Result<ApiResponse<Response>, ApiError> {
-//     let model = YourService::find_by_id(&state.db_pool, id)?;
+//     let model = YourService::find_by_id(&state.db_pool, &id)?;
 //     Ok(ApiResponse::success(model.into()))
 // }
 //
@@ -37,8 +36,8 @@
 //
 // pub async fn delete(
 //     State(state): State<AppState>,
-//     Path(id): Path<Uuid>,
+//     Path(id): Path<String>,
 // ) -> Result<NoContent, ApiError> {
-//     YourService::delete(&state.db_pool, id)?;
+//     YourService::delete(&state.db_pool, &id)?;
 //     Ok(NoContent)
 // }

@@ -1,16 +1,19 @@
 use serde::{Deserialize, Serialize};
-use tracing::info;
+use tracing::{error, info};
 
+use crate::infrastructure::email::EmailClient;
 use crate::infrastructure::queue::QueueClient;
 
 pub const EMAIL_JOB_TYPE: &str = "send_email";
 pub const WELCOME_EMAIL_JOB_TYPE: &str = "send_welcome_email";
+pub const PASSWORD_RESET_JOB_TYPE: &str = "send_password_reset";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SendEmailArgs {
     pub to: String,
     pub subject: String,
     pub body: String,
+    pub html_body: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -18,6 +21,13 @@ pub struct WelcomeEmailArgs {
     pub user_id: String,
     pub email: String,
     pub name: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PasswordResetArgs {
+    pub email: String,
+    pub name: String,
+    pub reset_link: String,
 }
 
 pub struct EmailWorker {
@@ -41,9 +51,19 @@ impl EmailWorker {
     ) -> Result<String, redis::RedisError> {
         self.queue.enqueue(WELCOME_EMAIL_JOB_TYPE, args).await
     }
+
+    pub async fn enqueue_password_reset(
+        &self,
+        args: PasswordResetArgs,
+    ) -> Result<String, redis::RedisError> {
+        self.queue.enqueue(PASSWORD_RESET_JOB_TYPE, args).await
+    }
 }
 
-pub async fn process_email_job(job: serde_json::Value) -> Result<(), Box<dyn std::error::Error>> {
+pub async fn process_email_job(
+    job: serde_json::Value,
+    email_client: &EmailClient,
+) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let job_type = job["type"].as_str().unwrap_or("unknown");
 
     match job_type {
@@ -54,7 +74,17 @@ pub async fn process_email_job(job: serde_json::Value) -> Result<(), Box<dyn std
                 subject = %args.subject,
                 "Processing email job"
             );
-            // TODO: Implement actual email sending
+
+            if let Some(html_body) = &args.html_body {
+                email_client
+                    .send_html(&args.to, &args.subject, &args.body, html_body)
+                    .await?;
+            } else {
+                email_client
+                    .send_text(&args.to, &args.subject, &args.body)
+                    .await?;
+            }
+
             info!(to = %args.to, "Email sent successfully");
         }
         WELCOME_EMAIL_JOB_TYPE => {
@@ -64,11 +94,28 @@ pub async fn process_email_job(job: serde_json::Value) -> Result<(), Box<dyn std
                 email = %args.email,
                 "Processing welcome email job"
             );
-            // TODO: Implement welcome email template
+
+            email_client
+                .send_welcome_email(&args.email, &args.name)
+                .await?;
+
             info!(email = %args.email, "Welcome email sent successfully");
         }
+        PASSWORD_RESET_JOB_TYPE => {
+            let args: PasswordResetArgs = serde_json::from_value(job["args"].clone())?;
+            info!(
+                email = %args.email,
+                "Processing password reset email job"
+            );
+
+            email_client
+                .send_password_reset_email(&args.email, &args.name, &args.reset_link)
+                .await?;
+
+            info!(email = %args.email, "Password reset email sent successfully");
+        }
         _ => {
-            tracing::warn!(job_type = %job_type, "Unknown email job type");
+            error!(job_type = %job_type, "Unknown email job type");
         }
     }
 

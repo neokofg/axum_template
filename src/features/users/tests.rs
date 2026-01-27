@@ -55,10 +55,10 @@ mod tests {
     #[test]
     fn test_user_response_from_user() {
         use chrono::Utc;
-        use uuid::Uuid;
+        use ulid::Ulid;
 
         let user = User {
-            id: Uuid::new_v4(),
+            id: Ulid::new().to_string(),
             email: "test@example.com".to_string(),
             password_hash: "hash".to_string(),
             name: "Test".to_string(),

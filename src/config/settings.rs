@@ -10,6 +10,7 @@ pub struct Settings {
     pub jwt: JwtSettings,
     pub rate_limit: RateLimitSettings,
     pub logging: LoggingSettings,
+    pub smtp: SmtpSettings,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -51,6 +52,17 @@ pub struct LoggingSettings {
     pub format: String,
 }
 
+#[derive(Debug, Deserialize, Clone)]
+pub struct SmtpSettings {
+    pub host: String,
+    pub port: u16,
+    pub username: String,
+    pub password: String,
+    pub from_email: String,
+    pub from_name: String,
+    pub tls: bool,
+}
+
 impl Settings {
     pub fn new() -> Result<Self, ConfigError> {
         let run_mode = env::var("APP_ENV").unwrap_or_else(|_| "development".into());
@@ -74,6 +86,17 @@ impl Settings {
                     .ok()
                     .and_then(|p| p.parse::<u16>().ok()),
             )?
+            .set_override_option("smtp.host", env::var("SMTP_HOST").ok())?
+            .set_override_option(
+                "smtp.port",
+                env::var("SMTP_PORT")
+                    .ok()
+                    .and_then(|p| p.parse::<u16>().ok()),
+            )?
+            .set_override_option("smtp.username", env::var("SMTP_USERNAME").ok())?
+            .set_override_option("smtp.password", env::var("SMTP_PASSWORD").ok())?
+            .set_override_option("smtp.from_email", env::var("SMTP_FROM_EMAIL").ok())?
+            .set_override_option("smtp.from_name", env::var("SMTP_FROM_NAME").ok())?
             .build()?;
 
         config.try_deserialize()

@@ -4,7 +4,7 @@ use axum::{
     middleware::Next,
     response::Response,
 };
-use uuid::Uuid;
+use ulid::Ulid;
 
 static X_REQUEST_ID: HeaderName = HeaderName::from_static("x-request-id");
 
@@ -14,7 +14,7 @@ pub async fn request_id_middleware(mut request: Request<Body>, next: Next) -> Re
         .get(&X_REQUEST_ID)
         .and_then(|value| value.to_str().ok())
         .map(|s| s.to_string())
-        .unwrap_or_else(|| Uuid::new_v4().to_string());
+        .unwrap_or_else(|| Ulid::new().to_string());
 
     request
         .headers_mut()
